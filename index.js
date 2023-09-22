@@ -19,9 +19,6 @@ app.use('/api', require('./src/routes/ApiRoute'))
 app.get('*', (req, res) => {
   res.sendFile(`${__dirname}/dist/index.html`)
 })
-// app.get('/', (req, res) => {
-//   res.send('Hello world')
-// })
 
 const port = process.env.PORT || 3000
 app.listen(port, () => { console.log(`running on port:${port}`) })

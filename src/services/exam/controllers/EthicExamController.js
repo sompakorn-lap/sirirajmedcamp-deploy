@@ -1,11 +1,12 @@
 const asyncHandler = require('express-async-handler')
 const { EthicExamQuestion } = require('../models/ChoiceQuestion')
 const { EthicExamAnswer } = require('../models/ChoiceAnswer')
+const { ChoiceExamGrader } = require('../../../libs/ExamLib')
 
 const viewQuestion = asyncHandler(async (req, res) => {
   const { questionId } = req.params
 
-  const question = await EthicExamQuestion.findOne({ questionId }).lean().exec()
+  const question = await EthicExamQuestion.findOne({ questionId }).select('-choices.score').lean().exec()
   if(!question){
     return res.status(404).send('Question not found')
   }
@@ -59,10 +60,15 @@ const saveAnswers = asyncHandler(async (req, res) => {
 const submitAnswers = asyncHandler(async (req, res) => {
   const { userId } = req.params
 
-  const answer = await EthicExamAnswer.findOneAndUpdate({ userId, editable: true }, { editable: false }).lean().exec()
+  const answer = await EthicExamAnswer.findOne({ userId, editable: true })
   if(!answer){
     return res.status(404).send('Answer not found')
   }
+  const result = await ChoiceExamGrader(answer.answers, EthicExamQuestion)
+  answer.answers = result
+  answer.editable = false
+  answer.score = result.reduce((sum, item) => (sum + item.score), 0)
+  await answer.save()
   res.status(200).send('Successful answer submit')
 })
 

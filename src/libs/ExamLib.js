@@ -1,9 +1,3 @@
-function shuffleQuestion(questions){
-  return questions
-    .sort(0.5 - Math.random())
-    .map((item) => ({ ...item, text: '', score: 0 }))
-}
-
 async function ChoiceExamGrader(answers, questionModel){
   return Promise.all(answers.map(async function({ questionId, text }) {
     const question = await questionModel.findOne({ questionId })
@@ -17,6 +11,5 @@ async function ChoiceExamGrader(answers, questionModel){
 }
 
 module.exports = {
-  shuffleQuestion,
   ChoiceExamGrader
 }

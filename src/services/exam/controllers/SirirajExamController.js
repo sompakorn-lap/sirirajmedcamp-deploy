@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler')
 const { SirirajExamQuestion } = require('../models/ChoiceQuestion')
 const { SirirajExamAnswer } = require('../models/ChoiceAnswer')
+const { ChoiceExamGrader } = require('../../../libs/ExamLib')
 
 const viewQuestion = asyncHandler(async (req, res) => {
   const { questionId } = req.params
@@ -15,7 +16,7 @@ const viewQuestion = asyncHandler(async (req, res) => {
 const getQuestions = asyncHandler(async (req, res) => {
   const { userId } = req.params
 
-  const already = await SirirajExamAnswer.findOne({ userId }).lean().exec()
+  const already = await SirirajExamAnswer.findOne({ userId }).select('-choices.score').lean().exec()
   if(already){
     if(already.editable){
       return res.status(200).json(already)
@@ -59,10 +60,15 @@ const saveAnswers = asyncHandler(async (req, res) => {
 const submitAnswers = asyncHandler(async (req, res) => {
   const { userId } = req.params
 
-  const answer = await SirirajExamAnswer.findOneAndUpdate({ userId, editable: true }, { editable: false }).lean().exec()
+  const answer = await SirirajExamAnswer.findOne({ userId, editable: true })
   if(!answer){
     return res.status(404).send('Answer not found')
   }
+  const result = await ChoiceExamGrader(answer.answers, SirirajExamQuestion)
+  answer.answers = result
+  answer.editable = false
+  answer.score = result.reduce((sum, item) => (sum + item.score), 0)
+  await answer.save()
   res.status(200).send('Successful answer submit')
 })
 
