@@ -1,0 +1,74 @@
+const asyncHandler = require('express-async-handler')
+const { EthicExamQuestion } = require('../models/ChoiceQuestion')
+const { EthicExamAnswer } = require('../models/ChoiceAnswer')
+
+const viewQuestion = asyncHandler(async (req, res) => {
+  const { questionId } = req.params
+
+  const question = await EthicExamQuestion.findOne({ questionId }).lean().exec()
+  if(!question){
+    return res.status(404).send('Question not found')
+  }
+  res.status(200).json(question)
+})
+
+const getQuestions = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+
+  const already = await EthicExamAnswer.findOne({ userId }).lean().exec()
+  if(already){
+    if(already.editable){
+      return res.status(200).json(already)
+    }
+    else {
+      return res.status(409).json('Answer has been submited')
+    }
+  }
+
+  const questionSet = Math.floor(Math.random() * 1) // random question set
+  let queryQuestions = await EthicExamQuestion.find({ questionSet }).lean()
+
+  const questions = await EthicExamAnswer.create({
+    userId,
+    editable: true,
+    recentlyIndex: 0,
+    answers: queryQuestions
+      .sort((a, b) => (0.5 - Math.random())) // shuffle questions
+      .map(({ questionId }) => ({ questionId, text: '', score: 0 })), // set default value
+    score: 0
+  })
+  if(questions){
+    res.status(201).json(questions)
+  }
+  else {
+    res.status(400).send('Failed to create questions')
+  }
+})
+
+const saveAnswers = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+  const { answers, recentlyIndex } = req.body
+
+  const answer = await EthicExamAnswer.findOneAndUpdate({ userId, editable: true }, { answers, recentlyIndex }).lean().exec()
+  if(!answer){
+    return res.status(404).send('Answer not found')
+  }
+  res.status(200).send('Successful answer save')
+})
+
+const submitAnswers = asyncHandler(async (req, res) => {
+  const { userId } = req.params
+
+  const answer = await EthicExamAnswer.findOneAndUpdate({ userId, editable: true }, { editable: false }).lean().exec()
+  if(!answer){
+    return res.status(404).send('Answer not found')
+  }
+  res.status(200).send('Successful answer submit')
+})
+
+module.exports = {
+  viewQuestion,
+  getQuestions,
+  saveAnswers,
+  submitAnswers
+}

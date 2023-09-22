@@ -1,0 +1,27 @@
+const express = require('express')
+const cors = require('cors')
+const cookieParser = require('cookie-parser')
+require('dotenv').config()
+
+const { corsConfig } = require('./src/configs/corsConfig')
+const { mongooseConfig } = require('./src/configs/mongooseConfig')
+
+const app = express()
+app.use(express.json({ limit: '3mb' }))
+app.use(cookieParser())
+app.use(cors(corsConfig))
+app.use(express.static('dist'))
+
+mongooseConfig()
+
+app.use('/api', require('./src/routes/ApiRoute'))
+
+app.get('*', (req, res) => {
+  res.sendFile(`${__dirname}/dist/index.html`)
+})
+// app.get('/', (req, res) => {
+//   res.send('Hello world')
+// })
+
+const port = process.env.PORT || 3000
+app.listen(port, () => { console.log(`running on port:${port}`) })
