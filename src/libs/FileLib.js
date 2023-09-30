@@ -14,7 +14,7 @@ function uploadFile(base64url) {
       const { data } = await drive.files.create({
         requestBody: {
           name: fileName,
-          parents: ['1sesTpZJoufKckJ3QXSj0XV85vW6RDPHl']
+          parents: ['12MvdvdxiKUfbWZbIBPRNR5-Zg7yY_sBz']
         },
         media: {
           body: bufferStream

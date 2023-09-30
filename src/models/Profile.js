@@ -14,7 +14,6 @@ const ProfileSchema = mongoose.Schema({
   religion: String,
   school: String,
   province: String,
-  grade: String,
   congenitalDisease: String,
   allergicFood: String,
   allergicDrug: String,
