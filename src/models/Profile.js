@@ -13,6 +13,7 @@ const ProfileSchema = mongoose.Schema({
   citizenship: String,
   religion: String,
   school: String,
+  grade: String,
   province: String,
   congenitalDisease: String,
   allergicFood: String,
