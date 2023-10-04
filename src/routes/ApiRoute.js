@@ -6,6 +6,7 @@ router.use('/transaction', require('./TransactionRoute'))
 router.use('/document', require('./DocumentRoute'))
 router.use('/file', require('./FileRoute'))
 router.use('/user', require('./UserRoute'))
+router.use('/sponsor', require('./SponsorRoute'))
 router.use('/questionnaire', require('./QuestionnaireRoute'))
 
 router.use('/exam', require('../services/exam/routes/ExamRoute'))
